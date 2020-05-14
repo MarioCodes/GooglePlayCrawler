@@ -8,4 +8,5 @@ bin/
 */**/database/data
 *.iml
 
-vertx/vertx-eventbus/multilanguage/vertx-eventbus-multilanguage-consumer/\.vertx/debug-js/vertx-js/
+.idea/
+venv/
