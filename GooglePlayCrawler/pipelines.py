@@ -8,11 +8,12 @@
 import pymongo
 from scrapy.exceptions import DropItem
 
+
 class GooglePlayCrawlerPipeline(object):
     def __init__(self):
-        connection=pymongo.MongoClient('127.0.0.1', 27017)
-        db=connection['GoogleApp']
-        self.collection=db['GooglePlayCrawler']
+        connection = pymongo.MongoClient('127.0.0.1', 27017)
+        db = connection['GoogleApp']
+        self.collection = db['GooglePlayCrawler']
 
     def process_item(self, item, spider):
         valid = True

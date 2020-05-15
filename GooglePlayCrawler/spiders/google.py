@@ -3,11 +3,11 @@ import re
 import json
 import scrapy
 
+from items import GooglePlayCrawlerItem
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.linkextractors import LinkExtractor
 from scrapy.http import FormRequest
-from items import GooglePlayCrawlerItem
 
 
 class GoogleSpider(CrawlSpider):
@@ -25,19 +25,20 @@ class GoogleSpider(CrawlSpider):
         super(GoogleSpider, self).__init__(*a, **kw)
 
     def parse_app(self, response):
+        item = GooglePlayCrawlerItem()
 
-    	item = GooglePlayCrawlerItem()
-    	item['url'] = response.url
+        item['url'] = response.url
         item['appid'] = response.url.split("?id=")[-1].split("&")[0]
         item['score'] = response.xpath("//div[@class='score']").xpath("text()").extract()
         item['datePublished'] = response.xpath("//div[@itemprop='datePublished']").xpath("text()").extract()
         item['fileSize'] = response.xpath("//div[@itemprop='fileSize']").xpath("text()").extract()
-    	item['numDownloads'] = response.xpath("//div[@itemprop='numDownloads']").xpath("text()").extract()
+        item['numDownloads'] = response.xpath("//div[@itemprop='numDownloads']").xpath("text()").extract()
         item['softwareVersion'] = response.xpath("//div[@itemprop='softwareVersion']").xpath("text()").extract()
         item['operatingSystems'] = response.xpath("//div[@itemprop='operatingSystems']").xpath("text()").extract()
         item['contentRating'] = response.xpath("//div[@itemprop='contentRating']").xpath("text()").extract()
         item['thumbs'] = response.xpath("//div[@class='thumbnails']/img").xpath("@src").extract()
-        item['icon'] = response.xpath("//div[@class='cover-container']/img[@class='cover-image']").xpath("@src").extract()
+        item['icon'] = response.xpath("//div[@class='cover-container']/img[@class='cover-image']").xpath(
+            "@src").extract()
         item['description'] = response.xpath("//div[@itemprop='description']/div").xpath("text()").extract()
         item['permissions'] = []
         item['reviews'] = []
@@ -60,8 +61,9 @@ class GoogleSpider(CrawlSpider):
 
         pageNum = 0
         url = "https://play.google.com/store/getreviews"
-        formdata = {"id":item['appid'], "reviewType":'0', "reviewSortOrder":'4', "pageNum":str(pageNum), "xhr":'1'}
-        request = FormRequest(url, callback=self.parse_review, formdata=formdata, meta={'item':item, 'pageNum':0, 'url':url})
+        formdata = {"id": item['appid'], "reviewType": '0', "reviewSortOrder": '4', "pageNum": str(pageNum), "xhr": '1'}
+        request = FormRequest(url, callback=self.parse_review, formdata=formdata,
+                              meta={'item': item, 'pageNum': 0, 'url': url})
         yield request
 
     def parse_review(self, response):
@@ -73,10 +75,15 @@ class GoogleSpider(CrawlSpider):
             blocks = sell.xpath('//div[@class="single-review"]')
             reviews = []
             for block in blocks:
-                author = block.xpath('div[@class="review-header"]/div[@class="review-info"]/span[@class="author-name"]/text()').extract()
-                date = block.xpath('div[@class="review-header"]/div[@class="review-info"]/span[@class="review-date"]/text()').extract()
-                star = block.xpath('div[@class="review-header"]/div[@class="review-info"]/div[@class="review-info-star-rating"]/div').xpath("@aria-label").extract()
-                title = block.xpath('div[@class="review-body with-review-wrapper"]/span[@class="review-title"]/text()').extract()
+                author = block.xpath(
+                    'div[@class="review-header"]/div[@class="review-info"]/span[@class="author-name"]/text()').extract()
+                date = block.xpath(
+                    'div[@class="review-header"]/div[@class="review-info"]/span[@class="review-date"]/text()').extract()
+                star = block.xpath(
+                    'div[@class="review-header"]/div[@class="review-info"]/div[@class="review-info-star-rating"]/div').xpath(
+                    "@aria-label").extract()
+                title = block.xpath(
+                    'div[@class="review-body with-review-wrapper"]/span[@class="review-title"]/text()').extract()
                 body = block.xpath('div[@class="review-body with-review-wrapper"]/text()').extract()
                 year = date[0][-4:]
                 if year != '2016' and year != '2017' and year != '2015':
@@ -94,11 +101,13 @@ class GoogleSpider(CrawlSpider):
 
         pageNum = response.meta['pageNum'] + 1
         url = response.meta['url']
-        #note that every page gets at most 40 reviews
-        #reviewSortOrder = 4 means helpfulness reviews
+        # note that every page gets at most 40 reviews
+        # reviewSortOrder = 4 means helpfulness reviews
         if item['continued'] and pageNum < 3:
-            formdata = {"id":item['appid'], "reviewType":'0', "reviewSortOrder":'4', "pageNum":str(pageNum), "xhr":'1'}
-            yield FormRequest(url, callback=self.parse_review, formdata=formdata, meta={'item':item, 'pageNum':pageNum, 'url':url})
+            formdata = {"id": item['appid'], "reviewType": '0', "reviewSortOrder": '4', "pageNum": str(pageNum),
+                        "xhr": '1'}
+            yield FormRequest(url, callback=self.parse_review, formdata=formdata,
+                              meta={'item': item, 'pageNum': pageNum, 'url': url})
         else:
             for key, value in item.items():
                 if key == 'reviews':
