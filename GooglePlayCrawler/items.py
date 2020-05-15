@@ -8,7 +8,19 @@
 import scrapy
 
 
-class GoogleplaycrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class GooglePlayCrawlerItem(scrapy.Item):
+    url = scrapy.Field()
+    appid = scrapy.Field()
+    score = scrapy.Field()
+    datePublished = scrapy.Field()
+    fileSize = scrapy.Field()
+    numDownloads = scrapy.Field()
+    softwareVersion = scrapy.Field()
+    operatingSystems = scrapy.Field()
+    contentRating = scrapy.Field()
+    thumbs = scrapy.Field()
+    icon = scrapy.Field()
+    description = scrapy.Field()
+    reviews = scrapy.Field()
+    permissions = scrapy.Field()
+    continued = scrapy.Field()
